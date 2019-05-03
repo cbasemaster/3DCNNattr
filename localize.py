@@ -11,15 +11,10 @@ import subprocess
 import utils
 import gc
 import os 
-from eval_detection import compute_average_precision_detection
-from utiles import segment_iou
 import cv2
 import math
-from sklearn import svm
 import pywt
-from sklearn import mixture
-from sliding import sliding_window
-from model import (generate_model, generate_model_linear)
+
 
 def vis(inputs):
 	#print "++++",subprocess.check_output(['nvidia-smi', '--query-gpu=memory.used','--format=csv,nounits,noheader'])
