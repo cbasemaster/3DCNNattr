@@ -50,7 +50,7 @@ def list_files(dir):
         	r.append(subdir + "/" )                                                                         
     return r    
 
-filtered = list_files("../visual-attribution/base2")
+filtered = list_files("./base")
 model = utils.load_model("resnext")
 model.cuda()
 print filtered
