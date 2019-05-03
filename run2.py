@@ -4,7 +4,6 @@ sys.path.append('./')
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 from create_explainer import get_explainer
-from preprocess import get_preprocess
 import utils
 import viz
 import torch
@@ -71,6 +70,7 @@ class Run:
             	    ToTensor(1), Normalize([0, 0, 0], [1, 1, 1])
 
 		])
+	
 	self.model = utils.load_model(self.model_methods[0][0])
         self.model.cuda()
         #self.video=[]
@@ -101,11 +101,6 @@ class Run:
 	self.totalhit6=0
 	self.totalhit7=0
 	self.totalframes=0
-	#transf = get_preprocess(self.model_methods[0][0], self.model_methods[0][1])
-        #self.model = utils.load_model(self.model_methods[0][0])
-        #self.model.cuda()
-
-    
 
     def myRange(self,start,end,step):
     	i = start
@@ -123,8 +118,8 @@ class Run:
      #path = path.replace("base2","base") 
      path_gt = path.replace("base/","base2/")    
      
-     path="../visual-attribution/"+path
-     path_gt="../visual-attribution/"+path_gt
+     path="./"+path
+     path_gt="./"+path_gt
      print path_gt
      if os.path.isdir(path_gt):
 	     
@@ -149,11 +144,9 @@ class Run:
 		boxes=[]
 
 		for filename in sorted(files)[index:index+16]:
-		
 			video.append(Image.open(path+filename))
 		
 		diff=0
-		
 		matfile=scipy.io.loadmat(path_gt+files_gt[0])
 		coor= np.array(matfile["pos_img"]).transpose(2,1,0).tolist()[index:index+16]
 		scale= matfile["scale"][0]	
@@ -169,7 +162,6 @@ class Run:
 			video=video[0:16]
 			coor=coor * (16/len(coor)) * 2
 			coor=coor[0:16]
-			
 		
 	        print len(video),len(coor)
 	        if len(coor)==0:
@@ -200,14 +192,11 @@ class Run:
 		    saliency3,s3,kls,scr,c3 = self.explainer3.explain(inp)	
 		    saliency4,s4,kls,scr,c4 = self.explainer4.explain(inp)
 		    saliency5, s5,kls,scr,c5 = self.explainer5.explain(inp)
-		    
 		    saliency6,pool,kls,scr,c6 = self.explainer6.explain(inp)
 		      
 		    torch.cuda.empty_cache()
 		    
-		    
 		    saliency=(saliency6+saliency5+saliency4+saliency3+saliency2+saliency)
-		    
 		    
 		    if self.classes[kls]==path.split("/")[5]:
 			label=1
@@ -225,7 +214,7 @@ class Run:
 		    		    
 		    del pool,inp,saliency,saliency6 
 		    torch.cuda.empty_cache()
-		    #print subprocess.check_output(['nvidia-smi', '--query-gpu=memory.used','--format=csv,nounits,noheader'])
+		    
 		plt.figure(figsize=(50, 5))
 		      
 		for k in range(len(video[0:(16-diff)])):
@@ -253,6 +242,7 @@ class Run:
 				h=(112-y)
 			    	
 			    ax=viz.plot_bbox([x,y,w,h],img)
+			
 		    plt.axis('off')
 		    ax = plt.gca()
 		    
@@ -261,15 +251,10 @@ class Run:
 		    sal=(sal-np.mean(sal))/np.std(sal)
 		    ret,thresh = cv2.threshold(sal,np.mean(sal)+((np.amax(sal)-np.mean(sal))*0.5),1,cv2.THRESH_BINARY)
 		    
-		    
-		   
 	            contours,hierarchy = cv2.findContours(thresh.astype(np.uint8), 1, 2)
-		    #print contours
+		    
 		    areas = [cv2.contourArea(c) for c in contours]
-		    #print areas
-		    #quit()
-		    #max_index = np.argmax(areas)
-		    #cnt=contours[max_index] 
+		    
 		    if len(contours)>0:	
 			    
 			    glob=np.array([cv2.boundingRect(cnt) for cnt in contours])
@@ -289,9 +274,9 @@ class Run:
 				    rect2 = patches.Rectangle((x2, y2), w2 , h2,
 						 linewidth=2, edgecolor='r', facecolor='none')
 				    ax.add_patch(rect2)
-				    #print x,w,y,h,x2,w2 
+				    
 		            overlap=nms.get_iou([x,x+w,y,y+h],[x3,x13,y3,y13])
-	                    #print overlap
+	                    
 			    if label==1:
 				    if overlap>=0.6:
 					    hit=1
@@ -307,9 +292,7 @@ class Run:
 					   hit6=1
 				    if overlap>0.0:
 					   hit7=1
-			    
-		    
-
+			
 		    self.totalhit+=hit
 		    self.totalhit2+=hit2
 		    self.totalhit3+=hit3
